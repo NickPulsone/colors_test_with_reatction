@@ -172,7 +172,6 @@ if __name__ == "__main__":
     for i in range(iterations):
         # Determine the most accurate nonsilent chunk that is associated with a given iteration
         for j in range(len(response_timing_markers)):
-            # TODO: Figure out how to catch false super human reactions
             if response_timing_markers[j] > stimuli_time_stamps[i]:
                 # If reaction is too fast, it means the program is considering a delayed response from previous stimulus
                 # Thus, we should continue the loop if that is the case, otherwise, break and store the reaction time
