@@ -9,6 +9,8 @@ from pydub import AudioSegment
 from pydub.silence import detect_nonsilent
 from scipy.io import loadmat, wavfile
 import csv
+import speech_recognition as sr
+import soundfile
 
 """ ~~~~~~~~~~~~~     TUNABLE PARAMETERS     ~~~~~~~~~~~~~ """
 # Name of given trial
@@ -28,6 +30,9 @@ SILENCE_THRESHOLD_DB = -20.0
 
 # The minimum period, in milliseconds, that could distinguish two different responses
 MIN_PERIOD_SILENCE_MS = 250
+
+# If you already have an audio file (.wav) with the proper name in the working directory, set to True
+# SKIP_RECORDING = True
 """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
 # Get screen dimensions
@@ -62,13 +67,14 @@ if __name__ == "__main__":
     mat = loadmat(MAT_FILE_NAME)
     color_words = [mat["words_test"][i].strip() for i in range(len(mat["words_test"]))]
     actual_colors = (255 * mat["colors_test"]).tolist()
-    iterations = int(len(color_words))
+    iterations = int(len(color_words) / 12)
 
     # Convert Yellow from BGR in Matlab to RGB in Opencv
     for i in range(iterations):
         if actual_colors[i] == [255, 255, 0]:
             actual_colors[i] = list(reversed(actual_colors[i]))
 
+    """
     # Creates an array that contains the global time for each time stamp
     stimuli_time_stamps = np.empty(iterations, dtype=datetime.datetime)
 
@@ -185,11 +191,45 @@ if __name__ == "__main__":
         if j >= len(response_timing_markers) or rt > 1.2:
             rt = float('nan')
         reaction_times.append(rt)
+    """
+
+    # Initialize an array containing the correct answers, and another array to hold user response accuracies
+    correct_answers = [list(COLORS.keys())[list(COLORS.values()).index(tuple(actual_colors[i]))] for i in range(iterations)]
+    response_accuracies = np.empty(iterations, dtype=str)
+
+    # Convert the .wav to PCIM Wav that can be read by the speech recognizer
+    data, samplerate = soundfile.read(TRIAL_NAME + ".wav")
+    soundfile.write(TRIAL_NAME + ".wav", data, samplerate, subtype='PCM_16')
+
+    # Start the google speech to text recognizer
+    r = sr.Recognizer()
+    # Open the .wav file
+    with sr.AudioFile(TRIAL_NAME + ".wav") as source:
+        # listen for the data (load audio to memory)
+        audio_data = r.record(source)
+        # recognize (convert from speech to text)
+        text = r.recognize_google(audio_data)
+    # Get individual answers
+    answers = text.split()
+    print(text)
+
+    # Determine if the response was correct, if not, store what the speech recognition thought
+    for i in range(len(correct_answers)):
+        if answers[i] == correct_answers[i].lower():
+            response_accuracies[i] = "CORRECT"
+        else:
+            response_accuracies[i] = (answers[i].lower())
+
+    print(correct_answers)
+    print(len(response_accuracies))
+    print(iterations)
 
     # Write results to file
+    """
     with open(TRIAL_NAME + ".csv", 'w') as reac_file:
         writer = csv.writer(reac_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(['Text', 'Actual Color', 'Reaction time (s)'])
         for i in range(iterations):
-            writer.writerow([color_words[i], list(COLORS.keys())[list(COLORS.values()).index(tuple(actual_colors[i]))], reaction_times[i]])
+            writer.writerow([color_words[i], correct_answers[i], response_accuracies[i], reaction_times[i]])
     print("Done")
+    """
