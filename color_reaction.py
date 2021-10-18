@@ -124,7 +124,7 @@ if __name__ == "__main__":
         sleep(1.0)
     sleep(0.5)
 
-    # Define recording parameters and begin recording and start recording
+    # Define recording parameters and start recording
     rec_seconds = int(iterations) + 10
     sample_rate = 44100
     myrecording = sd.rec(int(rec_seconds * sample_rate), samplerate=sample_rate, channels=1)
