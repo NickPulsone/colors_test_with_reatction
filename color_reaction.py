@@ -11,6 +11,7 @@ from scipy.io import loadmat, wavfile
 import csv
 import speech_recognition as sr
 import soundfile
+from math import isnan
 
 """ ~~~~~~~~~~~~~     TUNABLE PARAMETERS     ~~~~~~~~~~~~~ """
 # Name of given trial
@@ -67,31 +68,27 @@ if __name__ == "__main__":
     mat = loadmat(MAT_FILE_NAME)
     color_words = [mat["words_test"][i].strip() for i in range(len(mat["words_test"]))]
     actual_colors = (255 * mat["colors_test"]).tolist()
-    iterations = int(len(color_words) / 12)
+    iterations = int(len(color_words) / 15)
 
     # Convert Yellow from BGR in Matlab to RGB in Opencv
     for i in range(iterations):
         if actual_colors[i] == [255, 255, 0]:
             actual_colors[i] = list(reversed(actual_colors[i]))
 
-    """
+
     # Creates an array that contains the global time for each time stamp
     stimuli_time_stamps = np.empty(iterations, dtype=datetime.datetime)
-
     # Create an array of stimuli images
     stimuli_images = []
     for i in range(iterations):
         # Copy the template image
         new_img = np.copy(img)
-
         # Determine text size from given word
         textsize = cv2.getTextSize(color_words[i], font, 1, 2)[0]
-
         # Define parameters for positioning text on a given blank image
         textX = int((img.shape[1] - textsize[0] * fontScale) / 2)
         textY = int((img.shape[0] + textsize[1] * fontScale) / 2)
         bottomLeftCornerOfText = (textX, textY)
-
         # Position text on the screen
         cv2.putText(new_img, color_words[i],
                     bottomLeftCornerOfText,
@@ -99,23 +96,18 @@ if __name__ == "__main__":
                     fontScale,
                     color=actual_colors[i],
                     thickness=fontThickness)
-
         # Add the image to the array
         stimuli_images.append(new_img)
-
     # Give user a countdown
     for word in ["Get Ready...", "3..", "2..", "1..", "GO!!!"]:
         # Copy blank image from template
         new_img = np.copy(img)
-
         # Determine text size
         textsize = cv2.getTextSize(word, font, 1, 2)[0]
-
         # Define parameters for positioning text on template image
         textX = int((img.shape[1] - textsize[0] * countDownFontScale) / 2)
         textY = int((img.shape[0] + textsize[1] * countDownFontScale) / 2)
         bottomLeftCornerOfText = (textX, textY)
-
         # Position text on the screen
         cv2.putText(new_img, word,
                     bottomLeftCornerOfText,
@@ -123,19 +115,16 @@ if __name__ == "__main__":
                     countDownFontScale,
                     color=(0, 0, 0),  # make the words black
                     thickness=coutDownFontThickness)
-
         # Wait out a 1s delay, then destory the image
         cv2.imshow(window_name, new_img)
         cv2.waitKey(1)
         sleep(1.0)
     sleep(0.5)
-
     # Define recording parameters and begin recording and start recording
     rec_seconds = int(iterations) + 10
     sample_rate = 44100
     myrecording = sd.rec(int(rec_seconds * sample_rate), samplerate=sample_rate, channels=1)
     recording_start_time = datetime.datetime.now()
-
     # Displays the text to the user for given number of iterations
     for i in range(iterations):
         # Show image add the given array position to the user
@@ -147,23 +136,18 @@ if __name__ == "__main__":
         sleep(DELAY)
     # Destroy last displayed image
     cv2.destroyAllWindows()
-
     # Stop the recording, save file as .wav
     print("Waiting for recording to stop...")
     sd.wait()
     wavfile.write(TRIAL_NAME + '.wav', sample_rate, myrecording)  # Save as WAV file
     print("Done.")
     print("Calculating reaction times...")
-
     # Calculate the time at which each stimulus is displayed with respect to the start of the recording
     stimuli_time_stamps = np.array([(stimuli_time_stamps[i] - recording_start_time).total_seconds() for i in range(iterations)])
-
     # Open .wav with pydub
     audio_segment = AudioSegment.from_wav(TRIAL_NAME + ".wav")
-
     # Normalize audio_segment to a threshold
     normalized_sound = match_target_amplitude(audio_segment, SILENCE_THRESHOLD_DB)
-
     # Generate nonsilent chunks (start, end) with pydub
     response_timing_chunks = np.array(detect_nonsilent(normalized_sound, min_silence_len=MIN_PERIOD_SILENCE_MS, silence_thresh=SILENCE_THRESHOLD_DB, seek_step=1))
     # If unable to detect nonsilence, end program and notify user
@@ -172,7 +156,6 @@ if __name__ == "__main__":
         exit(1)
     # Calculate the time that the user starts to speak in each nonsilent "chunk"
     response_timing_markers = np.array(response_timing_chunks[:, 0]) / 1000.0
-
     # Calculate the reponse times given the arrays for response_timing_markers and stimuli_time_stamps
     reaction_times = []
     for i in range(iterations):
@@ -191,7 +174,7 @@ if __name__ == "__main__":
         if j >= len(response_timing_markers) or rt > 1.2:
             rt = float('nan')
         reaction_times.append(rt)
-    """
+
 
     # Initialize an array containing the correct answers, and another array to hold user response accuracies
     correct_answers = [list(COLORS.keys())[list(COLORS.values()).index(tuple(actual_colors[i]))] for i in range(iterations)]
@@ -210,26 +193,37 @@ if __name__ == "__main__":
         # recognize (convert from speech to text)
         text = r.recognize_google(audio_data)
     # Get individual answers
-    answers = text.split()
-    print(text)
+    answers = (text.upper()).split()
 
+    # Keep track of total correct answers to track user performance
+    num_correct_responses = 0
+    # Ensure that if a response was miss, it is not cross-compared with the true correct answers
+    for i in range(iterations):
+        if isnan(reaction_times[i]):
+            print("GOT HERE")
+            answers.insert(i, "N/A")
     # Determine if the response was correct, if not, store what the speech recognition thought
-    for i in range(len(correct_answers)):
-        if answers[i] == correct_answers[i].lower():
-            response_accuracies[i] = "CORRECT"
+    for i in range(iterations):
+        if answers[i] == "N/A":
+            response_accuracies[i] = "N/A"
         else:
-            response_accuracies[i] = (answers[i].lower())
+            try:
+                if answers[i][0] == correct_answers[i][0]:
+                    response_accuracies[i] = "TRUE"
+                    num_correct_responses += 1
+                else:
+                    response_accuracies[i] = "FALSE"
+            # Index error means that there was a recording issue, so just assign "N/A"
+            except IndexError as err:
+                response_accuracies[i] = "N/A"
 
-    print(correct_answers)
-    print(len(response_accuracies))
-    print(iterations)
-
+    print("You got " + str(num_correct_responses) + " / " + str(iterations) +
+          " correct answers (" + str(100*float(num_correct_responses)/iterations) + " %).")
     # Write results to file
-    """
     with open(TRIAL_NAME + ".csv", 'w') as reac_file:
         writer = csv.writer(reac_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(['Text', 'Actual Color', 'Reaction time (s)'])
+        writer.writerow(['Text', 'Actual Color', 'Response', 'Accuracy (T/F)', 'Reaction time (s)'])
         for i in range(iterations):
-            writer.writerow([color_words[i], correct_answers[i], response_accuracies[i], reaction_times[i]])
+            writer.writerow([color_words[i], correct_answers[i], answers[i], response_accuracies[i], reaction_times[i]])
     print("Done")
-    """
+
