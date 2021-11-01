@@ -125,6 +125,7 @@ if __name__ == "__main__":
     sample_rate = 44100
     myrecording = sd.rec(int(rec_seconds * sample_rate), samplerate=sample_rate, channels=1)
     recording_start_time = datetime.datetime.now()
+    sleep(DELAY)
     # Displays the text to the user for given number of iterations
     for i in range(iterations):
         # Show image add the given array position to the user
