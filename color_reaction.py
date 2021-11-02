@@ -220,11 +220,20 @@ if __name__ == "__main__":
 
     print("You got " + str(num_correct_responses) + " / " + str(iterations) +
           " correct answers (" + str(100*float(num_correct_responses)/iterations) + " %).")
+    
+    # Create another array to label each reactiontime according to if it was within the alloted time or not
+    reaction_on_time = np.empty(iterations, dtype=bool)
+    for i in range(iterations):
+        if reaction_times[i] > DELAY:
+            reaction_on_time[i] = False
+        else:
+            reaction_on_time[i] = True
+    
     # Write results to file
     with open(TRIAL_NAME + ".csv", 'w') as reac_file:
         writer = csv.writer(reac_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(['Text', 'Actual Color', 'Response', 'Accuracy (T/F)', 'Reaction time (s)'])
+        writer.writerow(['Text', 'Actual Color', 'Response', 'Accuracy (T/F)', 'Reaction time (s)', 'Reaction on time (T/F)'])
         for i in range(iterations):
-            writer.writerow([color_words[i], correct_answers[i], answers[i], response_accuracies[i], reaction_times[i]])
+            writer.writerow([color_words[i], correct_answers[i], answers[i], response_accuracies[i], reaction_times[i], reaction_on_time[i]])
     print("Done")
 
