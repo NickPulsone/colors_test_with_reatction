@@ -1,4 +1,3 @@
-#TODO: speed up
 #!/usr/bin/env python
 import ctypes
 import datetime
@@ -15,8 +14,6 @@ import speech_recognition as sr
 import soundfile
 from math import isnan
 import os
-
-
 
 """ ~~~~~~~~~~~~~     TUNABLE PARAMETERS     ~~~~~~~~~~~~~ """
 # Name of given trial
@@ -36,9 +33,6 @@ SILENCE_THRESHOLD_DB = -20.0
 
 # The minimum period, in milliseconds, that could distinguish two different responses
 MIN_PERIOD_SILENCE_MS = 250
-
-# If you already have an audio file (.wav) with the proper name in the working directory, set to True
-# SKIP_RECORDING = True
 """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
 # Get screen dimensions
@@ -165,7 +159,7 @@ if __name__ == "__main__":
         print("Could not detect user's responses. Silence threshold/Minimum silence period may need tuning.")
         exit(1)
 
-    # Calculate the time that the user starts to speak in each nonsilent "chunk"
+    # Store the time that the user starts to speak in each nonsilent "chunk"
     response_timing_markers = np.array(response_timing_chunks[:, 0]) / 1000.0
 
     # Create a folder to store the individual responses as clips to help determine
@@ -173,6 +167,7 @@ if __name__ == "__main__":
     clip_seperation_path = TRIAL_NAME + "_reponse_chunks"
     if not os.path.isdir(clip_seperation_path):
         os.mkdir(clip_seperation_path)
+    # How much we add (ms) to the ends of a clip when saved
     clip_threshold = 600
     for i in range(len(response_timing_chunks)):
         chunk = response_timing_chunks[i]
@@ -184,7 +179,7 @@ if __name__ == "__main__":
             (audio_segment[chunk[0]-clip_threshold:(rec_seconds*1000)-1]).export(chunk_filename, format="wav")
         else:
             (audio_segment[chunk[0]-clip_threshold:chunk[1]+clip_threshold]).export(chunk_filename, format="wav")
-        # Reformat the wav files using soundfile to allow for speech recongition
+        # Reformat the wav files using soundfile to allow for speech recongition, and store in folder
         data, samplerate = soundfile.read(chunk_filename)
         soundfile.write(chunk_filename, data, samplerate, subtype='PCM_16')
 
@@ -220,10 +215,9 @@ if __name__ == "__main__":
                     if response_timing_markers[j] - stimuli_time_stamps[i] < 0.1 and reaction_times[-1] > DELAY:
                         continue
                     rt = response_timing_markers[j] - stimuli_time_stamps[i]
+                    # Break from the loop as soon as we find a response after the time of the stimulus
                     break
             # If there is no nonsilent chunk after the time that the stimulus is displayed, store reaction time as "nan"
-            # Also if the user's response is over 1.2s after the stimulus is displayed, then we know they either failed to
-            # respond or the audio was not recorded and intepreted properly.
             if j >= len(response_timing_markers):
                 reaction_times.append(float('nan'))
                 raw_answers.append("N/A")
@@ -270,25 +264,17 @@ if __name__ == "__main__":
                         response_accuracies.append("FALSE")
         reaction_times.append(rt)
 
+    # Notify user of performance
     print("You got " + str(num_correct_responses) + " / " + str(iterations) +
           " correct answers (" + str(100 * float(num_correct_responses) / iterations) + " %).")
 
-    # Create another array to label each reactiontime according to if it was within the alloted time or not
+    # Create another array to label each reaction time according to if it was within the allotted time or not
     reaction_on_time = np.empty(iterations, dtype=bool)
     for i in range(iterations):
         if reaction_times[i] > DELAY or isnan(reaction_times[i]):
             reaction_on_time[i] = False
         else:
             reaction_on_time[i] = True
-
-    if len(raw_answers) != iterations:
-        print(f"Raw answers length: {len(raw_answers)}\nRaw Answers: {raw_answers}\n")
-    if len(response_accuracies) != iterations:
-        print(f"Response accuracies length: {len(response_accuracies)}\nResponse Accuracies: {response_accuracies}\n")
-    if len(reaction_times) != iterations:
-        print(f"Reaction times length: {len(reaction_times)}\nReaction times: {reaction_times}\n")
-    if len(reaction_on_time) != iterations:
-        print(f"Reaction on time array length: {len(reaction_on_time)}\nReaction on time array: {reaction_on_time}\n")
 
     # Write results to file
     with open(TRIAL_NAME + ".csv", 'w') as reac_file:
@@ -299,3 +285,4 @@ if __name__ == "__main__":
             writer.writerow([color_words[i], correct_answers[i], raw_answers[i], response_accuracies[i], reaction_times[i],
                              reaction_on_time[i]])
     print("Done")
+    
