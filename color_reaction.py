@@ -153,7 +153,7 @@ if __name__ == "__main__":
     response_timing_chunks = np.array(
         detect_nonsilent(normalized_sound, min_silence_len=MIN_PERIOD_SILENCE_MS, silence_thresh=SILENCE_THRESHOLD_DB,
                          seek_step=1))
-    print(f"Response timing chunks: {response_timing_chunks}")
+    # print(f"Response timing chunks: {response_timing_chunks}")
     # If unable to detect nonsilence, end program and notify user
     if len(response_timing_chunks) == 0:
         print("Could not detect user's responses. Silence threshold/Minimum silence period may need tuning.")
@@ -204,7 +204,6 @@ if __name__ == "__main__":
             rt = float('nan')
             response_accuracies.append("N/A")
             raw_answers.append("N/A")
-            print(f"{i}) Clip invalid (top)")
         # ..otherwise go through more tests
         else:
             # Determine the most accurate nonsilent chunk that is associated with a given iteration
@@ -222,7 +221,6 @@ if __name__ == "__main__":
                 reaction_times.append(float('nan'))
                 raw_answers.append("N/A")
                 response_accuracies.append("N/A")
-                print(f"{i}) Clip invalid (bottom)")
                 continue
             else:
                 # If the response was valid, detemine if it was correct using speech recognition
@@ -238,7 +236,6 @@ if __name__ == "__main__":
                         response_accuracies.append("N/A")
                         raw_answers.append("N/A")
                         reaction_times.append(rt)
-                        print(f"{i}) Could not read corresponding clip")
                         continue
                     # compare response from stt to the acutal response, update response accuracies accordingly
                     if resp in COLORS.keys():
@@ -247,7 +244,6 @@ if __name__ == "__main__":
                             num_correct_responses += 1
                         else:
                             response_accuracies.append("FALSE")
-                        print(f"{i}) Read corresponding clip (google)")
                         raw_answers.append(resp)
                     elif resp_backup in COLORS.keys():
                         if resp_backup == correct_answers[i]:
@@ -255,11 +251,9 @@ if __name__ == "__main__":
                             num_correct_responses += 1
                         else:
                             response_accuracies.append("FALSE")
-                        print(f"{i}) Read corresponding clip (sphinx)")
                         raw_answers.append(resp_backup)
                     # If word not found, store response and mark as false
                     else:
-                        print(f"{i}) Neither interpretation of response was correct")
                         raw_answers.append(resp)
                         response_accuracies.append("FALSE")
         reaction_times.append(rt)
