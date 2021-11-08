@@ -279,4 +279,3 @@ if __name__ == "__main__":
             writer.writerow([color_words[i], correct_answers[i], raw_answers[i], response_accuracies[i], reaction_times[i],
                              reaction_on_time[i]])
     print("Done")
-    
