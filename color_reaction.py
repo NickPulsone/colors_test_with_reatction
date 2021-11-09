@@ -196,6 +196,8 @@ if __name__ == "__main__":
 
     # Calculate the reponse times given the arrays for response_timing_markers and stimuli_time_stamps
     reaction_times = []
+    # Init an array to contain the indices of the nonsilent clips used
+    clip_index_array = np.empty(iterations, dtype=int)
     # Keep track of total correct answers to track user performance
     num_correct_responses = 0
     for i in range(iterations):
@@ -225,6 +227,7 @@ if __name__ == "__main__":
             else:
                 # If the response was valid, detemine if it was correct using speech recognition
                 with sr.AudioFile(os.path.join(clip_seperation_path, f"chunk{j}.wav")) as source:
+                    clip_index_array[i] = j
                     # listen for the data (load audio to memory)
                     audio_data = r.record(source)
                     # recognize (convert from speech to text)
@@ -274,8 +277,9 @@ if __name__ == "__main__":
     with open(TRIAL_NAME + ".csv", 'w') as reac_file:
         writer = csv.writer(reac_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(
-            ['Text', 'Actual Color', 'Response', 'Accuracy (T/F)', 'Reaction time (s)', 'Reaction on time (T/F)'])
+            ['Text', 'Actual Color', 'Response', 'Accuracy (T/F)', 'Reaction time (s)', 'Reaction on time (T/F)', 'Clip Index'])
         for i in range(iterations):
             writer.writerow([color_words[i], correct_answers[i], raw_answers[i], response_accuracies[i], reaction_times[i],
-                             reaction_on_time[i]])
+                             reaction_on_time[i], clip_index_array[i]])
     print("Done")
+    
