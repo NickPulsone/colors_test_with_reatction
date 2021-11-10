@@ -68,7 +68,7 @@ if __name__ == "__main__":
     color_words = [mat["words_test"][i].strip() for i in range(len(mat["words_test"]))]
     actual_colors = (255 * mat["colors_test"]).tolist()
     #iterations = len(color_words)
-    iterations = 50
+    iterations = 25
 
     # Convert Yellow from BGR in Matlab to RGB in Opencv
     for i in range(iterations):
@@ -282,4 +282,3 @@ if __name__ == "__main__":
             writer.writerow([color_words[i], correct_answers[i], raw_answers[i], response_accuracies[i], reaction_times[i],
                              reaction_on_time[i], clip_index_array[i]])
     print("Done")
-    
