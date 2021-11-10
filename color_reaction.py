@@ -219,7 +219,7 @@ if __name__ == "__main__":
                     # Break from the loop as soon as we find a response after the time of the stimulus
                     break
             # If there is no nonsilent chunk after the time that the stimulus is displayed, store reaction time as "nan"
-            if j >= len(response_timing_markers):
+            if j >= len(response_timing_markers) or (rt > DELAY * 1.2):
                 reaction_times.append(float('nan'))
                 raw_answers.append("N/A")
                 response_accuracies.append("N/A")
