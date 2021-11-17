@@ -106,7 +106,6 @@ if __name__ == "__main__":
     # Init an array to contain the indices of the nonsilent clips used
     clip_index_array = np.empty(NUM_TESTS, dtype=int)
     # Keep track of total correct answers to track user performance
-    num_correct_responses = 0
     for i in range(NUM_TESTS):
         # If there is no response after a time stamp, clearly the user failed to respond...
         clip_index_array[i] = -1
@@ -152,14 +151,12 @@ if __name__ == "__main__":
                     if resp in COLORS.keys():
                         if resp == actual_colors[i]:
                             response_accuracies.append("TRUE")
-                            num_correct_responses += 1
                         else:
                             response_accuracies.append("FALSE")
                         raw_answers.append(resp)
                     elif resp_backup in COLORS.keys():
                         if resp_backup == actual_colors[i]:
                             response_accuracies.append("TRUE")
-                            num_correct_responses += 1
                         else:
                             response_accuracies.append("FALSE")
                         raw_answers.append(resp_backup)
