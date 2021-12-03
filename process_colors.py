@@ -106,6 +106,7 @@ if __name__ == "__main__":
     # Init an array to contain the indices of the nonsilent clips used
     clip_index_array = np.empty(NUM_TESTS, dtype=int)
     # Keep track of total correct answers to track user performance
+    num_correct_responses = 0
     for i in range(NUM_TESTS):
         # If there is no response after a time stamp, clearly the user failed to respond...
         clip_index_array[i] = -1
@@ -151,12 +152,14 @@ if __name__ == "__main__":
                     if resp in COLORS.keys():
                         if resp == actual_colors[i]:
                             response_accuracies.append("TRUE")
+                            num_correct_responses += 1
                         else:
                             response_accuracies.append("FALSE")
                         raw_answers.append(resp)
                     elif resp_backup in COLORS.keys():
                         if resp_backup == actual_colors[i]:
                             response_accuracies.append("TRUE")
+                            num_correct_responses += 1
                         else:
                             response_accuracies.append("FALSE")
                         raw_answers.append(resp_backup)
@@ -178,8 +181,14 @@ if __name__ == "__main__":
     with open(TRIAL_NAME + "_RESULTS.csv", 'w') as reac_file:
         writer = csv.writer(reac_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(
-            ['Text', 'Actual Color', 'Response', 'Accuracy (T/F)', 'Reaction time (s)', 'Reaction on time (T/F)', 'Clip Index'])
+            ['Text', 'Actual Color', 'Response', 'Accuracy (T/F)',
+                'Reaction time (s)', 'Reaction on time (T/F)', 'Clip Index', ' ', ' ', 'Time (from start) user speaks'])
         for i in range(NUM_TESTS):
-            writer.writerow([color_words[i], actual_colors[i], raw_answers[i], response_accuracies[i], reaction_times[i],
-                             reaction_on_time[i], clip_index_array[i]])
+            if i >= len(response_timing_markers):
+                writer.writerow([color_words[i], actual_colors[i], raw_answers[i], response_accuracies[i], reaction_times[i],
+                                reaction_on_time[i], clip_index_array[i], ' ', ' ', -1.0])
+            else:
+                writer.writerow(
+                    [color_words[i], actual_colors[i], raw_answers[i], response_accuracies[i], reaction_times[i],
+                     reaction_on_time[i], clip_index_array[i], ' ', ' ', response_timing_markers[i]])
     print("Done")
