@@ -53,7 +53,16 @@ reaction_times = np.array(data[:, 4], dtype=float)
 reaction_on_time = np.array(data[:, 5], dtype=str)
 clip_index_array = np.array(data[:, 6], dtype=int)
 response_timing_markers = np.array(data[:, 9], dtype=float)
-response_timing_markers = response_timing_markers[response_timing_markers != -1.0]
+
+# Reconstruct arrays from formatted data in the sheet
+color_words = color_words[color_words != '-1']
+actual_colors = actual_colors[actual_colors != '-1']
+user_responses = user_responses[user_responses != '-1']
+accuracy_array = accuracy_array[accuracy_array != '-1']
+reaction_times = reaction_times[reaction_times != -1]
+reaction_on_time = reaction_on_time[reaction_on_time != '-1']
+clip_index_array = clip_index_array[clip_index_array != -1]
+response_timing_markers = response_timing_markers[response_timing_markers != -1]
 NUM_TESTS = actual_colors.size
 
 # Get the number of clips by counting the nubmer of clips in the folder
@@ -74,7 +83,7 @@ clip_iteration_range = tuple(i for i in range(total_num_clips) if i not in REMOV
 r = sr.Recognizer()
 for i in iteration_indices:
     # If there is no response after a time stamp, clearly the user failed to respond...
-    clip_index_array[i] = -1
+    clip_index_array[i] = -9999
     rt = float('nan')
     if stimuli_time_stamps[i] > response_timing_markers[-1]:
         accuracy_array[i] = "N/A"
@@ -146,11 +155,15 @@ with open(TRIAL_NAME + "_RESULTS.csv", 'w') as reac_file:
     writer.writerow(
         ['Text', 'Actual Color', 'Response', 'Accuracy (T/F)', 'Reaction time (s)', 'Reaction on time (T/F)',
          'Clip Index', ' ', ' ', 'Time (from start) user speaks'])
-    for i in range(NUM_TESTS):
+    num_rows_in_table = max([len(response_timing_markers), len(actual_colors)])
+    for i in range(num_rows_in_table):
         if i >= len(response_timing_markers):
             writer.writerow(
                 [color_words[i], actual_colors[i], user_responses[i], accuracy_array[i], reaction_times[i],
-                 reaction_on_time[i], clip_index_array[i], ' ', ' ', -1.0])
+                 reaction_on_time[i], clip_index_array[i], ' ', ' ', -1])
+        elif i >= len(actual_colors):
+            writer.writerow(
+                [-1, -1, -1, -1, -1, -1, -1, ' ', ' ', response_timing_markers[i]])
         else:
             writer.writerow(
                 [color_words[i], actual_colors[i], user_responses[i], accuracy_array[i], reaction_times[i],
