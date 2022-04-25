@@ -8,13 +8,15 @@ import sounddevice as sd
 from scipy.io import loadmat, wavfile
 import csv
 
-
 """ ~~~~~~~~~~~~~     TUNABLE PARAMETERS     ~~~~~~~~~~~~~ """
 # Name of given trial
-TRIAL_NAME = "color_test1"
+TRIAL_NAME = "color_test"
+
+# Number of stimuli
+NUM_TESTS = 40
 
 # Delay time between each visual stimulus
-DELAY = 1.2
+DELAY = 1.75
 
 # Colors dictionary that identifies the RGB values of the used colors
 COLORS = {"YELLOW": (0, 255, 255), "RED": (0, 0, 255), "GREEN": (0, 255, 0), "BLUE": (255, 0, 0), "BLACK": (0, 0, 0)}
@@ -48,8 +50,8 @@ if __name__ == "__main__":
     mat = loadmat(MAT_FILE_NAME)
     color_words = [mat["words_test"][i].strip() for i in range(len(mat["words_test"]))]
     actual_colors = (255 * mat["colors_test"]).tolist()
-    #iterations = len(color_words)
-    iterations = 25
+    # iterations = len(color_words)
+    iterations = NUM_TESTS
 
     # Convert Yellow from BGR in Matlab to RGB in Opencv
     for i in range(iterations):
@@ -102,7 +104,7 @@ if __name__ == "__main__":
     sleep(0.5)
 
     # Define recording parameters and begin recording and start recording
-    rec_seconds = int(iterations) + 5
+    rec_seconds = int(iterations)*DELAY*1.2 + 5
     sample_rate = 44100
     myrecording = sd.rec(int(rec_seconds * sample_rate), samplerate=sample_rate, channels=1)
     recording_start_time = datetime.datetime.now()
@@ -110,10 +112,10 @@ if __name__ == "__main__":
 
     # Displays the text to the user for given number of iterations
     for i in range(iterations):
-        # Show image add the given array position to the user
-        cv2.imshow(window_name, stimuli_images[i])
         # Get global time of stimulus
         stimuli_time_stamps[i] = datetime.datetime.now()
+        # Show image add the given array position to the user
+        cv2.imshow(window_name, stimuli_images[i])
         # Wait out the given delay, then destory the image
         cv2.waitKey(1)
         sleep(DELAY)
@@ -140,4 +142,3 @@ if __name__ == "__main__":
         for i in range(iterations):
             writer.writerow([color_words[i], correct_answers[i], stimuli_time_stamps[i]])
     print("Done")
-    
