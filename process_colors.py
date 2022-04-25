@@ -11,11 +11,11 @@ import os
 
 """ ~~~~~~~~~~~~~     TUNABLE PARAMETERS     ~~~~~~~~~~~~~ """
 # Name of given trial
-TRIAL_NAME = "color_test1"
+TRIAL_NAME = "color_test"
 CSV_FILENAME = TRIAL_NAME + ".csv"
 
 # Delay time between each visual stimulus
-DELAY = 1.0
+DELAY = 1.75
 
 # Colors dictionary that identifies the RGB values of the used colors
 COLORS = {"YELLOW": (0, 255, 255), "RED": (0, 0, 255), "GREEN": (0, 255, 0), "BLUE": (255, 0, 0), "BLACK": (0, 0, 0)}
@@ -27,7 +27,7 @@ MAT_FILE_NAME = "ColorWord_versionB.mat"
 SILENCE_THRESHOLD_DB = -20.0
 
 # The minimum period, in milliseconds, that could distinguish two different responses
-MIN_PERIOD_SILENCE_MS = 250
+MIN_PERIOD_SILENCE_MS = 100
 """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
 
