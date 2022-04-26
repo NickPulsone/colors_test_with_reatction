@@ -11,11 +11,11 @@ import os
 
 """ ~~~~~~~~~~~~~     TUNABLE PARAMETERS     ~~~~~~~~~~~~~ """
 # Name of given trial
-TRIAL_NAME = "color_test"
+TRIAL_NAME = "color_test_425_1"
 CSV_FILENAME = TRIAL_NAME + ".csv"
 
 # Delay time between each visual stimulus
-DELAY = 1.75
+DELAY = 1.2
 
 # Colors dictionary that identifies the RGB values of the used colors
 COLORS = {"YELLOW": (0, 255, 255), "RED": (0, 0, 255), "GREEN": (0, 255, 0), "BLUE": (255, 0, 0), "BLACK": (0, 0, 0)}
@@ -24,7 +24,7 @@ COLORS = {"YELLOW": (0, 255, 255), "RED": (0, 0, 255), "GREEN": (0, 255, 0), "BL
 MAT_FILE_NAME = "ColorWord_versionB.mat"
 
 # The highest audio level (in dB) the program will determine to be considered "silence"
-SILENCE_THRESHOLD_DB = -20.0
+SILENCE_THRESHOLD_DB = -20.5
 
 # The minimum period, in milliseconds, that could distinguish two different responses
 MIN_PERIOD_SILENCE_MS = 100
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     stimuli_time_stamps = np.array(data[:, 2], dtype=float)
     NUM_TESTS = stimuli_time_stamps.size
 
-    print("Interpret data (this may take a while)...")
+    print("Interpreting data (this may take a while)...")
     # Open .wav with pydub
     audio_segment = AudioSegment.from_wav(TRIAL_NAME + ".wav")
     rec_seconds = audio_segment.duration_seconds
