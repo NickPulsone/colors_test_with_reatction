@@ -10,13 +10,13 @@ import csv
 
 """ ~~~~~~~~~~~~~     TUNABLE PARAMETERS     ~~~~~~~~~~~~~ """
 # Name of given trial
-TRIAL_NAME = "color_test"
+TRIAL_NAME = "color_test_425_1"
 
 # Number of stimuli
-NUM_TESTS = 40
+NUM_TESTS = 10
 
 # Delay time between each visual stimulus
-DELAY = 1.75
+DELAY = 1.2
 
 # Colors dictionary that identifies the RGB values of the used colors
 COLORS = {"YELLOW": (0, 255, 255), "RED": (0, 0, 255), "GREEN": (0, 255, 0), "BLUE": (255, 0, 0), "BLACK": (0, 0, 0)}
@@ -101,21 +101,21 @@ if __name__ == "__main__":
         cv2.imshow(window_name, new_img)
         cv2.waitKey(1)
         sleep(1.0)
-    sleep(0.5)
+    sleep(DELAY)
 
     # Define recording parameters and begin recording and start recording
-    rec_seconds = int(iterations)*DELAY*1.2 + 5
+    rec_seconds = (iterations * DELAY * 1.3) + 5.0
     sample_rate = 44100
     myrecording = sd.rec(int(rec_seconds * sample_rate), samplerate=sample_rate, channels=1)
     recording_start_time = datetime.datetime.now()
-    sleep(DELAY)
+    sleep(3)
 
     # Displays the text to the user for given number of iterations
     for i in range(iterations):
-        # Get global time of stimulus
-        stimuli_time_stamps[i] = datetime.datetime.now()
         # Show image add the given array position to the user
         cv2.imshow(window_name, stimuli_images[i])
+        # Get global time of stimulus
+        stimuli_time_stamps[i] = datetime.datetime.now()
         # Wait out the given delay, then destory the image
         cv2.waitKey(1)
         sleep(DELAY)
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     print("Waiting for recording to stop...")
     sd.wait()
     wavfile.write(TRIAL_NAME + '.wav', sample_rate, myrecording)  # Save as WAV file
-    print("Done.")
+    print("Done. Saving data...")
 
     # Calculate the time at which each stimulus is displayed with respect to the start of the recording
     stimuli_time_stamps = np.array(
@@ -141,4 +141,4 @@ if __name__ == "__main__":
         writer.writerow(['Text', 'Actual Color', 'Stimuli time from start (s)'])
         for i in range(iterations):
             writer.writerow([color_words[i], correct_answers[i], stimuli_time_stamps[i]])
-    print("Done")
+    print("Done.")
