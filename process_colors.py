@@ -17,6 +17,9 @@ CSV_FILENAME = TRIAL_NAME + ".csv"
 # Delay time between each visual stimulus
 DELAY = 1.2
 
+# Number of stimuli
+NUM_TESTS = 25
+
 # Colors dictionary that identifies the RGB values of the used colors
 COLORS = {"YELLOW": (0, 255, 255), "RED": (0, 0, 255), "GREEN": (0, 255, 0), "BLUE": (255, 0, 0), "BLACK": (0, 0, 0)}
 
@@ -50,7 +53,7 @@ if __name__ == "__main__":
     color_words = np.array(data[:, 0], dtype=str)
     actual_colors = np.array(data[:, 1], dtype=str)
     stimuli_time_stamps = np.array(data[:, 2], dtype=float)
-    NUM_TESTS = stimuli_time_stamps.size
+    #NUM_TESTS = stimuli_time_stamps.size
 
     print("Interpreting data (this may take a while)...")
     # Open .wav with pydub
